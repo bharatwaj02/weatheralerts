@@ -5,13 +5,13 @@ import {
   Typography, 
   Chip, 
   Divider, 
-  Grid as MuiGrid, 
-  Link,
   Paper,
-  CircularProgress
+  CircularProgress,
+  Stack
 } from '@mui/material';
 import { Alert } from '../services/weatherApi';
 import { formatDate, getSeverityColor } from '../utils/dateUtils';
+import AlertMap from './AlertMap';
 
 interface AlertDetailsProps {
   alert: Alert | undefined;
@@ -23,7 +23,14 @@ interface AlertDetailsProps {
 const AlertDetails = ({ alert, isLoading, isError, error }: AlertDetailsProps) => {
   if (isLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center',
+        p: 4, 
+        minHeight: '70vh', 
+        width: '100%' 
+      }}>
         <CircularProgress />
       </Box>
     );
@@ -31,130 +38,177 @@ const AlertDetails = ({ alert, isLoading, isError, error }: AlertDetailsProps) =
 
   if (isError) {
     return (
-      <Typography color="error" variant="h6">
-        Error loading alert: {error?.message || 'Unknown error'}
-      </Typography>
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        p: 4, 
+        minHeight: '70vh', 
+        width: '100%' 
+      }}>
+        <Typography color="error" variant="h6">
+          Error loading alert: {error?.message || 'Unknown error'}
+        </Typography>
+      </Box>
     );
   }
 
   if (!alert) {
-    return <Typography variant="h6">Alert not found</Typography>;
+    return (
+      <Box sx={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        p: 4, 
+        minHeight: '70vh', 
+        width: '100%' 
+      }}>
+        <Typography variant="h6">Alert not found</Typography>
+      </Box>
+    );
   }
 
   const { properties } = alert;
 
   return (
-    <Card elevation={3}>
-      <CardContent>
-        <Box sx={{ mb: 3 }}>
-          <Typography variant="h4" gutterBottom>
-            {properties.event}
-          </Typography>
-          <Typography variant="h6" color="text.secondary" gutterBottom>
-            {properties.headline}
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap' }}>
-            <Chip 
-              label={properties.severity} 
-              color={getSeverityColor(properties.severity)}
-            />
-            <Chip label={properties.urgency} />
-            <Chip label={properties.certainty} />
-            <Chip label={properties.status} variant="outlined" />
-            <Chip label={properties.messageType} variant="outlined" />
+    <Box sx={{ width: '100%', py: 2 }}>
+      <Card elevation={3} sx={{ width: '100%' }}>
+        <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="h4" gutterBottom>
+              {properties.event}
+            </Typography>
+            <Typography variant="h6" color="text.secondary" gutterBottom>
+              {properties.headline}
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap' }}>
+              {/* Only show severity chip */}
+              <Chip 
+                label={properties.severity} 
+                color={getSeverityColor(properties.severity)}
+                sx={{ fontWeight: 'bold' }}
+              />
+            </Box>
           </Box>
-        </Box>
 
-        <Divider sx={{ my: 3 }} />
+          <Divider sx={{ my: 3 }} />
 
-        <MuiGrid container spacing={3}>
-          <MuiGrid item xs={12} md={6}>
-            <Paper variant="outlined" sx={{ p: 2 }}>
-              <Typography variant="subtitle1" fontWeight="bold">Time Information</Typography>
-              <Box sx={{ mt: 1 }}>
-                <Typography variant="body2">
-                  <strong>Sent:</strong> {formatDate(properties.sent)}
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Effective:</strong> {formatDate(properties.effective)}
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Onset:</strong> {formatDate(properties.onset)}
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Expires:</strong> {formatDate(properties.expires)}
-                </Typography>
-                {properties.ends && (
-                  <Typography variant="body2">
-                    <strong>Ends:</strong> {formatDate(properties.ends)}
-                  </Typography>
-                )}
-              </Box>
-            </Paper>
-          </MuiGrid>
+          {/* Two-column layout for better space utilization */}
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: { xs: 'column', md: 'row' }, 
+            gap: 3,
+            minHeight: '600px'  // Ensure minimum height
+          }}>
+            {/* Left column: Map */}
+            <Box sx={{ 
+              flex: 2,  // Changed from 1.5 to 2
+              minHeight: { xs: '400px', md: '600px' }
+            }}>
+              <AlertMap alert={alert} />
+            </Box>
 
-          <MuiGrid item xs={12} md={6}>
-            <Paper variant="outlined" sx={{ p: 2 }}>
-              <Typography variant="subtitle1" fontWeight="bold">Source Information</Typography>
-              <Box sx={{ mt: 1 }}>
-                <Typography variant="body2">
-                  <strong>Source:</strong> {properties.senderName}
+            {/* Right column: Alert Details */}
+            <Box sx={{ 
+              flex: 1,
+              width: '100%'  // Ensure full width in mobile
+            }}>
+              <Paper 
+                elevation={0} 
+                variant="outlined" 
+                sx={{ 
+                  p: 3, 
+                  mb: 3, 
+                  borderRadius: 2,
+                  backgroundColor: 'rgba(0, 0, 0, 0.02)',
+                  height: '100%'
+                }}
+              >
+                <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
+                  Alert Details
                 </Typography>
-                <Typography variant="body2">
-                  <strong>Status:</strong> {properties.status}
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Message Type:</strong> {properties.messageType}
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Category:</strong> {properties.category}
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Response Type:</strong> {properties.response}
-                </Typography>
-              </Box>
-            </Paper>
-          </MuiGrid>
+                
+                <Stack spacing={3}>
+                  <Paper variant="outlined" sx={{ p: 2 }}>
+                    <Typography variant="subtitle1" fontWeight="bold">Time Information</Typography>
+                    <Box sx={{ mt: 1 }}>
+                      <Typography variant="body2">
+                        <strong>Sent:</strong> {formatDate(properties.sent)}
+                      </Typography>
+                      <Typography variant="body2">
+                        <strong>Effective:</strong> {formatDate(properties.effective)}
+                      </Typography>
+                      <Typography variant="body2">
+                        <strong>Expires:</strong> {formatDate(properties.expires)}
+                      </Typography>
+                      {properties.ends && (
+                        <Typography variant="body2">
+                          <strong>Ends:</strong> {formatDate(properties.ends)}
+                        </Typography>
+                      )}
+                    </Box>
+                  </Paper>
 
-          <MuiGrid item xs={12}>
-            <Paper variant="outlined" sx={{ p: 2 }}>
-              <Typography variant="subtitle1" fontWeight="bold">Affected Area</Typography>
-              <Typography variant="body1" sx={{ mt: 1 }}>
-                {properties.areaDesc}
-              </Typography>
-            </Paper>
-          </MuiGrid>
+                  <Paper variant="outlined" sx={{ p: 2 }}>
+                    <Typography variant="subtitle1" fontWeight="bold">Source Information</Typography>
+                    <Box sx={{ mt: 1 }}>
+                      <Typography variant="body2">
+                        <strong>Source:</strong> {properties.senderName}
+                      </Typography>
+                      <Typography variant="body2">
+                        <strong>Category:</strong> {properties.category}
+                      </Typography>
+                      <Typography variant="body2">
+                        <strong>Response Type:</strong> {properties.response}
+                      </Typography>
+                    </Box>
+                  </Paper>
 
-          <MuiGrid item xs={12}>
-            <Paper variant="outlined" sx={{ p: 2 }}>
-              <Typography variant="subtitle1" fontWeight="bold">Description</Typography>
-              <Typography variant="body1" sx={{ mt: 1, whiteSpace: 'pre-line' }}>
-                {properties.description}
-              </Typography>
-            </Paper>
-          </MuiGrid>
+                  <Paper variant="outlined" sx={{ p: 2 }}>
+                    <Typography variant="subtitle1" fontWeight="bold">Affected Area</Typography>
+                    <Typography variant="body1" sx={{ mt: 1 }}>
+                      {properties.areaDesc}
+                    </Typography>
+                  </Paper>
+                </Stack>
+              </Paper>
+            </Box>
+          </Box>
 
-          {properties.instruction && (
-            <MuiGrid item xs={12}>
+          {/* Alert Content Panel - Full width */}
+          <Paper 
+            elevation={0} 
+            variant="outlined" 
+            sx={{ 
+              p: 3, 
+              mt: 3,
+              borderRadius: 2,
+              backgroundColor: 'rgba(0, 0, 0, 0.02)'
+            }}
+          >
+            <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
+              Alert Content
+            </Typography>
+            
+            <Stack spacing={3}>
               <Paper variant="outlined" sx={{ p: 2 }}>
-                <Typography variant="subtitle1" fontWeight="bold">Instructions</Typography>
+                <Typography variant="subtitle1" fontWeight="bold">Description</Typography>
                 <Typography variant="body1" sx={{ mt: 1, whiteSpace: 'pre-line' }}>
-                  {properties.instruction}
+                  {properties.description}
                 </Typography>
               </Paper>
-            </MuiGrid>
-          )}
 
-          <MuiGrid item xs={12}>
-            <Box sx={{ mt: 2 }}>
-              <Link href={properties['@id']} target="_blank" rel="noopener">
-                View on National Weather Service
-              </Link>
-            </Box>
-          </MuiGrid>
-        </MuiGrid>
-      </CardContent>
-    </Card>
+              {properties.instruction && (
+                <Paper variant="outlined" sx={{ p: 2 }}>
+                  <Typography variant="subtitle1" fontWeight="bold">Instructions</Typography>
+                  <Typography variant="body1" sx={{ mt: 1, whiteSpace: 'pre-line' }}>
+                    {properties.instruction}
+                  </Typography>
+                </Paper>
+              )}
+            </Stack>
+          </Paper>
+        </CardContent>
+      </Card>
+    </Box>
   );
 };
 

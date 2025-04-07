@@ -76,7 +76,11 @@ const AlertTable = ({ alerts, isLoading }: AlertTableProps) => {
       headerName: 'Event', 
       flex: 1,
       renderCell: (params: GridRenderCellParams) => (
-        <Typography variant="body2" fontWeight="medium">
+        <Typography 
+          variant="body2" 
+          fontWeight="medium"
+          sx={{ lineHeight: 'inherit' }}  // Override default Typography line-height
+        >
           {params.value?.toString() || ''}
         </Typography>
       )
@@ -152,7 +156,7 @@ const AlertTable = ({ alerts, isLoading }: AlertTableProps) => {
   const userTimezone = getUserTimezone();
 
   return (
-    <Box sx={{ width: '100%', maxWidth: '100%' }}>
+    <Box sx={{ width: '100%', maxWidth: '100%', overflow: 'hidden' }}>
       <Box sx={{ 
         display: 'flex', 
         flexDirection: { xs: 'column', sm: 'row' }, 
@@ -176,7 +180,7 @@ const AlertTable = ({ alerts, isLoading }: AlertTableProps) => {
         />
       </Box>
       
-      <Paper elevation={2} sx={{ height: getGridHeight(), width: '100%' }}>
+      <Paper elevation={2} sx={{ height: getGridHeight(), width: '100%', overflow: 'auto' }}>
         <DataGrid
           rows={rows}
           columns={columns}
@@ -191,6 +195,7 @@ const AlertTable = ({ alerts, isLoading }: AlertTableProps) => {
           slotProps={{
             toolbar: {
               showQuickFilter: true,
+              printOptions: { disableToolbarButton: true },
               sx: {
                 '& .MuiFormControl-root': {
                   width: { xs: '100%', sm: 'auto' }
@@ -242,6 +247,21 @@ const AlertTable = ({ alerts, isLoading }: AlertTableProps) => {
             '& .MuiDataGrid-main': {
               width: '100%',
             },
+            '& .MuiDataGrid-root': {
+              border: 'none',
+            },
+            '& .MuiDataGrid-cell': {
+              borderBottom: '1px solid rgba(224, 224, 224, 0.5)',
+            },
+            '& .MuiDataGrid-columnHeaders': {
+              backgroundColor: 'rgba(0, 0, 0, 0.04)',
+              borderBottom: '1px solid rgba(224, 224, 224, 1)',
+            },
+            '& .MuiDataGrid-virtualScroller': {
+              backgroundColor: 'transparent',
+            },
+            width: '100%',
+            height: '100%',
           }}
         />
       </Paper>

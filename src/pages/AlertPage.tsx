@@ -20,7 +20,13 @@ const AlertPage = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Box
+      sx={{
+        width: '100%',
+        px: { xs: 2, md: 4 },
+        py: 4,
+      }}
+    >
       <Box sx={{ mb: 3 }}>
         <Button 
           startIcon={<ArrowBackIcon />} 
@@ -31,17 +37,13 @@ const AlertPage = () => {
         </Button>
       </Box>
 
-      <Typography variant="h4" component="h1" gutterBottom>
-        Alert Details
-      </Typography>
-
       <AlertDetails 
         alert={alert} 
         isLoading={isLoading} 
         isError={isError} 
         error={error as Error | null} 
       />
-    </Container>
+    </Box>
   );
 };
 

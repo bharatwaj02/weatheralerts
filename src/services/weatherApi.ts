@@ -73,8 +73,7 @@ export const fetchAlerts = async (params: AlertsParams = {}): Promise<Alert[]> =
     // If active is true, use the /alerts/active endpoint, otherwise use /alerts
     const endpoint = params.active ? '/alerts/active' : '/alerts';
     
-    // Build query parameters - remove 'active' as it's not a valid query parameter
-    const { active, area, ...otherParams } = params;
+    const { active, area, start, end, ...otherParams } = params;
     
     // Create a clean query params object without any empty values
     const queryParams: Record<string, string> = {};
@@ -99,7 +98,22 @@ export const fetchAlerts = async (params: AlertsParams = {}): Promise<Alert[]> =
       params: queryParams
     });
     
-    return response.data.features;
+    let alerts = response.data.features;
+    
+    // Apply date filtering client-side if start or end dates are provided
+    if (start || end) {
+      const startDate = start ? new Date(start).getTime() : 0;
+      const endDate = end ? new Date(end).getTime() : Infinity;
+      
+      alerts = alerts.filter(alert => {
+        const effectiveDate = new Date(alert.properties.effective).getTime();
+        return effectiveDate >= startDate && effectiveDate <= endDate;
+      });
+      
+      console.log(`Filtered alerts by date range: ${start || 'beginning'} to ${end || 'now'}, ${alerts.length} results`);
+    }
+    
+    return alerts;
   } catch (error) {
     console.error('Error fetching alerts:', error);
     throw error;
