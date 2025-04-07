@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { Container, Typography, Button, Box } from '@mui/material';
+import { Button, Box } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { useWeatherAlert } from '../hooks/useWeatherAlerts';
 import AlertDetails from '../components/AlertDetails';

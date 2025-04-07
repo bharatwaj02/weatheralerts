@@ -196,6 +196,9 @@ const AlertTable = ({ alerts, isLoading }: AlertTableProps) => {
             toolbar: {
               showQuickFilter: true,
               printOptions: { disableToolbarButton: true },
+              csvOptions: {  // CSV export options
+                fileName: 'weather-alerts'
+              },
               sx: {
                 '& .MuiFormControl-root': {
                   width: { xs: '100%', sm: 'auto' }
