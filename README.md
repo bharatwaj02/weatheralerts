@@ -1,54 +1,82 @@
-# React + TypeScript + Vite
+# Weather Alerts App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The Weather Alerts App is a web application that displays active weather alerts on an interactive map. It provides features to view alert summaries, filter alerts by area or date, and explore individual alerts in detail, including their geographic impact.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **View Active Alerts**: Displays a list of all active weather alerts.
+- **Filter Alerts**:
+  - By Area: Narrow down alerts based on specific geographic regions.
+  - By Date: Filter alerts based on their issuance or expiration dates.
+- **Interactive Map**:
+  - Displays the affected area of an alert using Leaflet and OpenStreetMap.
+  - Highlights the alert's geographic region with polygons.
+- **Alert Details**: Click on an alert to view its detailed information, including the affected area on the map.
 
-## Expanding the ESLint configuration
+## Technology Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Frontend**: React with TypeScript
+- **Mapping**: Leaflet with OpenStreetMap tiles
+- **UI Components**: Material-UI (MUI)
+- **API Integration**: Fetches weather alert data from the National Weather Service API.
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## Components
+
+### `AlertMap`
+- Displays an interactive map showing the geographic impact of a selected alert.
+- Uses Leaflet to render polygons for areas affected by the alert.
+- Automatically adjusts the map view to fit the bounds of the affected area.
+
+### Other Components
+- **Alert List**: Displays a summary of all active alerts.
+- **Filters**: Allows users to filter alerts by area or date.
+- **Alert Details**: Shows detailed information about a selected alert.
+
+## How to Run the Project
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/bharatwaj02/weatheralerts.git
+   cd weatheralerts
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Start the development server:
+   ```bash
+   npm start
+   ```
+
+4. Open the app in your browser:
+   ```
+   http://localhost:3000
+   ```
+
+## Folder Structure
+
+```
+src/
+├── components/
+│   ├── AlertMap.tsx       # Displays the map for an alert
+│   ├── AlertList.tsx      # Lists all active alerts
+│   ├── Filters.tsx        # Provides filtering options
+│   └── AlertDetails.tsx   # Displays detailed information about an alert
+├── services/
+│   └── weatherApi.ts      # API integration for fetching weather alerts
+└── App.tsx                # Main application component
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Map Integration
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+The app uses **Leaflet** for rendering maps and **OpenStreetMap** for tile layers. The `AlertMap` component dynamically updates the map based on the selected alert's geographic data.
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+## Contributing
+
+Contributions are welcome! Feel free to open issues or submit pull requests to improve the app.
+
+## License
+
+This project is licensed under the MIT License.

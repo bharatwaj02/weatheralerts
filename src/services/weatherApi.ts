@@ -1,5 +1,6 @@
 import axios from 'axios';
 
+// Base URL for the National Weather Service API
 const API_BASE_URL = 'https://api.weather.gov';
 
 export interface AlertProperties {
@@ -48,13 +49,6 @@ export interface AlertsResponse {
   features: Alert[];
   title: string;
   updated: string;
-}
-
-// Parameters for fetching alerts
-export interface AlertsParams {
-  area?: string;
-  start?: string;
-  end?: string;
 }
 
 /**

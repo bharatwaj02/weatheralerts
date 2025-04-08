@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { fetchAlerts, fetchAlertById, Alert, AlertsParams } from '../services/weatherApi';
+import { fetchAlerts, fetchAlertById, Alert } from '../services/weatherApi';
 
 /**
  * Custom hook to fetch and manage weather alerts
