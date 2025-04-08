@@ -8,7 +8,7 @@ import {
   GridToolbar,
   GridRenderCellParams
 } from '@mui/x-data-grid';
-import { Box, Chip, Typography, Switch, FormControlLabel, Paper, useTheme, useMediaQuery } from '@mui/material';
+import { Box, Chip, Typography, Paper, useTheme, useMediaQuery } from '@mui/material';
 import { Alert } from '../services/weatherApi';
 import { formatDate, getSeverityColor, getUserTimezone } from '../utils/dateUtils';
 
@@ -44,7 +44,6 @@ const AlertTable = ({ alerts, isLoading }: AlertTableProps) => {
       sort: 'desc',
     },
   ]);
-  const [showExpired, setShowExpired] = useState<boolean>(false);
 
   // Calculate grid height based on screen size
   const getGridHeight = () => {
@@ -53,16 +52,11 @@ const AlertTable = ({ alerts, isLoading }: AlertTableProps) => {
     return '60vh'; // 60% of viewport height on small screens
   };
 
-  // Filter out expired alerts and test messages
+  // Filter out test messages
   const filteredAlerts = alerts.filter(alert => {
-    const isExpired = new Date(alert.properties.expires) < new Date();
     const isTestMessage = alert.properties.event.toLowerCase().includes('test');
     
-    if (!showExpired && isExpired) {
-      return false;
-    }
-    
-    // Always filter out test messages regardless of the showExpired setting
+    // Always filter out test messages
     if (isTestMessage) {
       return false;
     }
@@ -157,27 +151,10 @@ const AlertTable = ({ alerts, isLoading }: AlertTableProps) => {
 
   return (
     <Box sx={{ width: '100%', maxWidth: '100%', overflow: 'hidden' }}>
-      <Box sx={{ 
-        display: 'flex', 
-        flexDirection: { xs: 'column', sm: 'row' }, 
-        justifyContent: 'space-between', 
-        alignItems: { xs: 'flex-start', sm: 'center' }, 
-        mb: 2,
-        gap: 1
-      }}>
+      <Box sx={{ mb: 2 }}>
         <Typography variant="body2" color="text.secondary">
           All times shown in {userTimezone}
         </Typography>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={showExpired}
-              onChange={(e) => setShowExpired(e.target.checked)}
-              color="primary"
-            />
-          }
-          label="Show Expired Alerts"
-        />
       </Box>
       
       <Paper elevation={2} sx={{ height: getGridHeight(), width: '100%', overflow: 'auto' }}>

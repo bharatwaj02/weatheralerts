@@ -2,7 +2,6 @@ import axios from 'axios';
 
 const API_BASE_URL = 'https://api.weather.gov';
 
-// Types for the API responses
 export interface AlertProperties {
   '@id': string;
   id: string;
@@ -28,8 +27,8 @@ export interface AlertProperties {
   parameters: Record<string, string[]>;
   affectedZones: string[];
   geocode: {
-    UGC: string[];
-    SAME: string[];
+    UGC: string[]; // UGC: Universal Geographic Code - used by NWS to identify forecast zones and counties
+    SAME: string[];// SAME: Specific Area Message Encoding - used in Emergency Alert System broadcasts
   };
 }
 
@@ -56,11 +55,6 @@ export interface AlertsParams {
   area?: string;
   start?: string;
   end?: string;
-  status?: 'actual' | 'exercise' | 'system' | 'test' | 'draft';
-  message_type?: 'alert' | 'update' | 'cancel';
-  event?: string;
-  code?: string;
-  active?: boolean; // This is not used directly as a query param but to determine endpoint
 }
 
 /**
@@ -70,49 +64,40 @@ export interface AlertsParams {
  */
 export const fetchAlerts = async (params: AlertsParams = {}): Promise<Alert[]> => {
   try {
-    // If active is true, use the /alerts/active endpoint, otherwise use /alerts
-    const endpoint = params.active ? '/alerts/active' : '/alerts';
+    const { area, start, end } = params;
     
-    const { active, area, start, end, ...otherParams } = params;
-    
-    // Create a clean query params object without any empty values
-    const queryParams: Record<string, string> = {};
-    
-    // Only add non-empty parameters
-    Object.entries(otherParams).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        queryParams[key] = String(value);
-      }
-    });
-    
-    // Add area filter if provided and not empty
-    let url = `${API_BASE_URL}${endpoint}`;
+    let url = `${API_BASE_URL}/alerts/active`;
     if (area && area.trim() !== '') {
-      // If area is provided, use it as a path parameter for state alerts
       url = `${API_BASE_URL}/alerts/active/area/${area}`;
     }
     
-    console.log('Fetching alerts from URL:', url, 'with params:', queryParams);
+    console.log('Fetching alerts from URL:', url);
     
-    const response = await axios.get<AlertsResponse>(url, { 
-      params: queryParams
-    });
-    
+    const response = await axios.get<AlertsResponse>(url);
     let alerts = response.data.features;
     
-    // Apply date filtering client-side if start or end dates are provided
-    if (start || end) {
-      const startDate = start ? new Date(start).getTime() : 0;
-      const endDate = end ? new Date(end).getTime() : Infinity;
-      
-      alerts = alerts.filter(alert => {
+    // Applying all filtering client-side
+    alerts = alerts.filter(alert => {
+      // Filter by date range if provided
+      if (start || end) {
         const effectiveDate = new Date(alert.properties.effective).getTime();
-        return effectiveDate >= startDate && effectiveDate <= endDate;
-      });
+        const startDate = start ? new Date(start).getTime() : 0;
+        const endDate = end ? new Date(end).getTime() : Infinity;
+        if (effectiveDate < startDate || effectiveDate > endDate) {
+          return false;
+        }
+      }
       
-      console.log(`Filtered alerts by date range: ${start || 'beginning'} to ${end || 'now'}, ${alerts.length} results`);
-    }
+      // Filter out test messages
+      const isTestMessage = alert.properties.status.toLowerCase() === 'test';
+      if (isTestMessage) {
+        return false;
+      }
+      
+      return true;
+    });
     
+    console.log(`Found ${alerts.length} matching alerts`);
     return alerts;
   } catch (error) {
     console.error('Error fetching alerts:', error);
@@ -127,6 +112,7 @@ export const fetchAlerts = async (params: AlertsParams = {}): Promise<Alert[]> =
  */
 export const fetchAlertById = async (id: string): Promise<Alert> => {
   try {
+    // Use the regular alerts endpoint for fetching by ID
     const response = await axios.get<Alert>(`${API_BASE_URL}/alerts/${id}`);
     return response.data;
   } catch (error) {
