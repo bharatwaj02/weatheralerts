@@ -37,7 +37,6 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
-// Suppress console errors during tests
 const originalError = console.error;
 beforeAll(() => {
   console.error = (...args) => {

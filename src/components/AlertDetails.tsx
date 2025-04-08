@@ -109,7 +109,7 @@ const AlertDetails = ({ alert, isLoading, isError, error }: AlertDetailsProps) =
             {/* Right column: Alert Details */}
             <Box sx={{ 
               flex: 1,
-              width: '100%'  // Ensure full width in mobile
+              width: '100%'  
             }}>
               <Paper 
                 elevation={0} 

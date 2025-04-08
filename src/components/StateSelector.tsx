@@ -109,11 +109,12 @@ const StateSelector = ({ onApplyFilter }: StateSelectorProps) => {
       <Stack 
         direction={{ xs: 'column', sm: 'row' }} 
         spacing={2} 
-        alignItems="center"
+         alignItems={{ xs: 'stretch', sm: 'flex-start' }}
         sx={{ 
           '& .MuiButton-root': { 
             minWidth: '120px',
-            height: '40px'
+             marginTop: '16px',
+             height: '40px'
           }
         }}
       >

@@ -48,16 +48,31 @@ const AlertTable = ({ alerts, isLoading, selectedState = '', dateRange }: AlertT
     },
   ]);
 
-  // Calculate grid height based on screen size
+  /**
+   * Implements custom sorting for severity levels
+   * Order: Extreme > Severe > Moderate > Minor > Unknown
+   */
+  const severitySortComparator = (v1: string, v2: string) => {
+    const severityOrder = ['Extreme', 'Severe', 'Moderate', 'Minor', 'Unknown'];
+    const index1 = severityOrder.indexOf(v1) !== -1 ? severityOrder.indexOf(v1) : severityOrder.length;
+    const index2 = severityOrder.indexOf(v2) !== -1 ? severityOrder.indexOf(v2) : severityOrder.length;
+    return index2 - index1;
+  };
+
+  /** Responsive grid height calculation based on viewport size */
   const getGridHeight = () => {
-    if (isExtraLargeScreen) return '75vh'; // 75% of viewport height on large screens
+    if (isExtraLargeScreen) return '75vh'; 
     if (isLargeScreen) return '70vh'; // 70% of viewport height on medium screens
     return '60vh'; // 60% of viewport height on small screens
   };
 
-  // Enhanced client-side filtering
+  /** 
+   * Filters alerts based on:
+   * 1. Excluding test messages
+   * 2. State selection
+   * 3. Date range
+   */
   const filteredAlerts = alerts.filter(alert => {
-    // Filter out test messages
     const isTestMessage = alert.properties.event.toLowerCase().includes('test');
     if (isTestMessage) return false;
 
@@ -115,6 +130,7 @@ const AlertTable = ({ alerts, isLoading, selectedState = '', dateRange }: AlertT
       headerName: 'Severity', 
       flex: 0.8,
       minWidth: 100,
+      sortComparator: severitySortComparator, // Apply custom sort comparator
       renderCell: (params: GridRenderCellParams) => {
         const value = params.value?.toString() || '';
         return (

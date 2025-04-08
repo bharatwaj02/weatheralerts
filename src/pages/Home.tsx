@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { Container, Typography, Box, Button, Paper, CircularProgress, Alert as MuiAlert, Chip, Stack } from '@mui/material';
 import { useWeatherAlerts } from '../hooks/useWeatherAlerts';
 import { Alert } from '../services/weatherApi';
@@ -13,7 +13,7 @@ const Home = () => {
 
   const { data: alerts = [], isLoading, isError, error } = useWeatherAlerts();
 
-  // Get filtered alerts from AlertTable's filtering logic
+  /** Filters alerts based on state, date range, and excludes test messages */
   const getFilteredAlerts = (alerts: Alert[]) => {
     return alerts.filter(alert => {
       const isTestMessage = alert.properties.event.toLowerCase().includes('test');
@@ -42,7 +42,14 @@ const Home = () => {
     });
   };
 
-  // Calculate alert summary based on filtered alerts
+  /** 
+   * Calculates alert statistics based on severity levels:
+   * - Emergency/Extreme
+   * - Severe
+   * - Moderate
+   * - Minor
+   * - Unknown
+   */
   const alertSummary = useMemo(() => {
     const filteredAlerts = getFilteredAlerts(alerts);
     const summary = {
@@ -72,7 +79,7 @@ const Home = () => {
     return summary;
   }, [alerts, selectedState, dateRange]);
 
-  // Group alerts by event type using filtered alerts
+  /** Groups and sorts alerts by event type, returning top 10 most frequent events */
   const eventTypes = useMemo(() => {
     const filteredAlerts = getFilteredAlerts(alerts);
     const types: Record<string, number> = {};
@@ -91,12 +98,7 @@ const Home = () => {
       .slice(0, 10); // Get top 10 event types
   }, [alerts, selectedState, dateRange]);
 
-  // Load all alerts on initial render
-  useEffect(() => {
-    // This will trigger a fetch with the default parameters
-    // No need to do anything else since queryParams is already set up correctly
-  }, []);
-
+  /** Handlers for filter updates */
   const handleDateRangeFilter = (startDate: string | undefined, endDate: string | undefined) => {
     setDateRange([
       startDate ? new Date(startDate) : null,
@@ -108,6 +110,7 @@ const Home = () => {
     setSelectedState(stateCode.trim() ? stateCode.toUpperCase().trim() : '');
   };
 
+  /** Resets all filters and triggers reset events for child components */
   const handleResetAllFilters = () => {
     setSelectedState('');
     setDateRange([null, null]);
@@ -120,7 +123,7 @@ const Home = () => {
     window.dispatchEvent(stateSelectorResetEvent);
   };
 
-  // Create placeholder content for loading state
+  /** Renders loading state for summary section */
   const renderSummaryPlaceholder = () => (
     <>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3 }}>

@@ -13,7 +13,8 @@ const AlertMap = ({ alert }: AlertMapProps) => {
   const mapInstanceRef = useRef<L.Map | null>(null);
 
   useEffect(() => {
-    // Fix for Leaflet marker icons in production build
+    // Known issue: Leaflet's default icon paths don't work in production builds
+    // This fix ensures marker icons are loaded from a CDN
     delete (L.Icon.Default.prototype as any)._getIconUrl;
     L.Icon.Default.mergeOptions({
       iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
@@ -21,13 +22,14 @@ const AlertMap = ({ alert }: AlertMapProps) => {
       shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
     });
 
+    // Exit early if no alert data or map container is available
     if (!alert?.geometry || !mapRef.current) return;
 
-    // Initialize map if it doesn't exist
+    // Create map instance only once and persist it in ref
     if (!mapInstanceRef.current) {
       mapInstanceRef.current = L.map(mapRef.current).setView([0, 0], 2);
       
-      // Add OpenStreetMap tile layer
+      // Add base map layer using OpenStreetMap tiles
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       }).addTo(mapInstanceRef.current);
@@ -35,17 +37,18 @@ const AlertMap = ({ alert }: AlertMapProps) => {
 
     const map = mapInstanceRef.current;
 
-    // Clear any existing layers
+    // Remove all layers except the base map to prevent overlapping polygons
     map.eachLayer((layer) => {
       if (layer instanceof L.TileLayer) return; // Keep the base tile layer
       map.removeLayer(layer);
     });
 
-    // Convert GeoJSON coordinates to Leaflet format
+    // Handle Polygon geometry type for weather alert areas
     if (alert.geometry.type === 'Polygon') {
+      // Convert GeoJSON (lon, lat) to Leaflet (lat, lon) coordinate system
       const coordinates = alert.geometry.coordinates[0].map((coord: any) => [coord[1], coord[0]]) as L.LatLngExpression[];
       
-      // Create polygon and add to map
+      // Create and style the alert area polygon
       const polygon = L.polygon(coordinates, {
         color: 'red',
         fillColor: '#f03',
@@ -53,15 +56,15 @@ const AlertMap = ({ alert }: AlertMapProps) => {
         weight: 2
       }).addTo(map);
       
-      // Fit map to polygon bounds
+      // Auto-zoom map to show the entire alert area
       map.fitBounds(polygon.getBounds());
       
-      // Add a popup with alert information
+      // Add interactive popup with alert details
       polygon.bindPopup(`<b>${alert.properties.event}</b><br>${alert.properties.areaDesc}`);
     }
 
+    // Cleanup map instance when component unmounts
     return () => {
-      // Cleanup function
       if (mapInstanceRef.current && !mapRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
