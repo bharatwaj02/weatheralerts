@@ -1,33 +1,60 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Container, Typography, Box, Button, Paper, CircularProgress, Alert as MuiAlert, Chip, Stack } from '@mui/material';
 import { useWeatherAlerts } from '../hooks/useWeatherAlerts';
+import { Alert } from '../services/weatherApi';
 import AlertTable from '../components/AlertTable';
 import DateRangePicker from '../components/DateRangePicker';
 import StateSelector from '../components/StateSelector';
+import { isWithinInterval } from 'date-fns';
 
 const Home = () => {
-  const [queryParams, setQueryParams] = useState({
-    active: true,
-    area: '',
-    start: undefined as string | undefined,
-    end: undefined as string | undefined
-  });
+  const [selectedState, setSelectedState] = useState<string>('');
+  const [dateRange, setDateRange] = useState<[Date | null, Date | null]>([null, null]);
 
-  // Fetch alerts with React Query
-  const { data: alerts = [], isLoading, isError, error } = useWeatherAlerts(queryParams);
+  const { data: alerts = [], isLoading, isError, error } = useWeatherAlerts();
 
-  // Calculate alert summary counts
+  // Get filtered alerts from AlertTable's filtering logic
+  const getFilteredAlerts = (alerts: Alert[]) => {
+    return alerts.filter(alert => {
+      const isTestMessage = alert.properties.event.toLowerCase().includes('test');
+      if (isTestMessage) return false;
+
+      // State filter
+      if (selectedState) {
+        const alertState = alert.properties.geocode?.UGC?.[0]?.substring(0, 2);
+        if (!alertState || alertState !== selectedState) {
+          return false;
+        }
+      }
+
+      // Date range filter
+      if (dateRange[0] && dateRange[1]) {
+        const alertDate = new Date(alert.properties.effective);
+        if (!isWithinInterval(alertDate, { 
+          start: dateRange[0], 
+          end: dateRange[1] 
+        })) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  };
+
+  // Calculate alert summary based on filtered alerts
   const alertSummary = useMemo(() => {
+    const filteredAlerts = getFilteredAlerts(alerts);
     const summary = {
       emergency: 0,
       severe: 0,
       moderate: 0,
       minor: 0,
       unknown: 0,
-      total: alerts.length
+      total: filteredAlerts.length
     };
 
-    alerts.forEach(alert => {
+    filteredAlerts.forEach(alert => {
       const severity = alert.properties.severity.toLowerCase();
       if (severity === 'extreme') {
         summary.emergency++;
@@ -43,13 +70,14 @@ const Home = () => {
     });
 
     return summary;
-  }, [alerts]);
+  }, [alerts, selectedState, dateRange]);
 
-  // Group alerts by event type
+  // Group alerts by event type using filtered alerts
   const eventTypes = useMemo(() => {
+    const filteredAlerts = getFilteredAlerts(alerts);
     const types: Record<string, number> = {};
     
-    alerts.forEach(alert => {
+    filteredAlerts.forEach(alert => {
       const event = alert.properties.event;
       if (types[event]) {
         types[event]++;
@@ -61,7 +89,7 @@ const Home = () => {
     return Object.entries(types)
       .sort((a, b) => b[1] - a[1]) // Sort by count (descending)
       .slice(0, 10); // Get top 10 event types
-  }, [alerts]);
+  }, [alerts, selectedState, dateRange]);
 
   // Load all alerts on initial render
   useEffect(() => {
@@ -70,29 +98,19 @@ const Home = () => {
   }, []);
 
   const handleDateRangeFilter = (startDate: string | undefined, endDate: string | undefined) => {
-    // Apply filters immediately if we're setting date params directly
-    setQueryParams({
-      ...queryParams,
-      start: startDate,
-      end: endDate
-    });
+    setDateRange([
+      startDate ? new Date(startDate) : null,
+      endDate ? new Date(endDate) : null
+    ]);
   };
 
   const handleAreaFilter = (stateCode: string) => {
-    // Apply filters immediately
-    setQueryParams({
-      ...queryParams,
-      area: stateCode.trim() ? stateCode.toUpperCase().trim() : ''
-    });
+    setSelectedState(stateCode.trim() ? stateCode.toUpperCase().trim() : '');
   };
 
   const handleResetAllFilters = () => {
-    setQueryParams({
-      active: true,
-      area: '',
-      start: undefined,
-      end: undefined
-    });
+    setSelectedState('');
+    setDateRange([null, null]);
     
     // Reset the input fields in the components
     const dateRangeResetEvent = new CustomEvent('reset-date-range');
@@ -222,7 +240,12 @@ const Home = () => {
         </Box>
       ) : (
         <>
-          <AlertTable alerts={alerts} isLoading={isLoading} />
+          <AlertTable 
+            alerts={alerts} 
+            isLoading={isLoading} 
+            selectedState={selectedState}
+            dateRange={dateRange}
+          />
         </>
       )}
     </Container>

@@ -11,10 +11,13 @@ import {
 import { Box, Chip, Typography, Paper, useTheme, useMediaQuery } from '@mui/material';
 import { Alert } from '../services/weatherApi';
 import { formatDate, getSeverityColor, getUserTimezone } from '../utils/dateUtils';
+import { isWithinInterval } from 'date-fns';
 
 interface AlertTableProps {
   alerts: Alert[];
   isLoading: boolean;
+  selectedState?: string;
+  dateRange?: [Date | null, Date | null];
 }
 
 // Define the row type to ensure type safety
@@ -29,7 +32,7 @@ interface AlertRow {
   isTest?: boolean;
 }
 
-const AlertTable = ({ alerts, isLoading }: AlertTableProps) => {
+const AlertTable = ({ alerts, isLoading, selectedState = '', dateRange }: AlertTableProps) => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isLargeScreen = useMediaQuery(theme.breakpoints.up('md'));
@@ -52,15 +55,31 @@ const AlertTable = ({ alerts, isLoading }: AlertTableProps) => {
     return '60vh'; // 60% of viewport height on small screens
   };
 
-  // Filter out test messages
+  // Enhanced client-side filtering
   const filteredAlerts = alerts.filter(alert => {
+    // Filter out test messages
     const isTestMessage = alert.properties.event.toLowerCase().includes('test');
-    
-    // Always filter out test messages
-    if (isTestMessage) {
-      return false;
+    if (isTestMessage) return false;
+
+    // State filter
+    if (selectedState) {
+      const alertState = alert.properties.geocode?.UGC?.[0]?.substring(0, 2);
+      if (!alertState || alertState !== selectedState) {
+        return false;
+      }
     }
-    
+
+    // Date range filter
+    if (dateRange && dateRange[0] && dateRange[1]) {
+      const alertDate = new Date(alert.properties.effective);
+      const startDate = dateRange[0];
+      const endDate = dateRange[1];
+      
+      if (!isWithinInterval(alertDate, { start: startDate, end: endDate })) {
+        return false;
+      }
+    }
+
     return true;
   });
 

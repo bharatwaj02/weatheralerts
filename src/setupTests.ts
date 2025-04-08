@@ -1,20 +1,21 @@
 import '@testing-library/jest-dom';
 import 'jest-canvas-mock';
 
-declare global {
-  var ResizeObserver: any;
-  var IntersectionObserver: any;
+// Proper type definitions for ResizeObserver and IntersectionObserver
+interface CustomWindow extends Window {
+  ResizeObserver: any;
+  IntersectionObserver: any;
 }
 
-// Mock ResizeObserver
-global.ResizeObserver = class ResizeObserver {
+declare const window: CustomWindow;
+
+window.ResizeObserver = class ResizeObserver {
   observe() {}
   unobserve() {}
   disconnect() {}
 };
 
-// Mock IntersectionObserver
-global.IntersectionObserver = class IntersectionObserver {
+window.IntersectionObserver = class IntersectionObserver {
   constructor() {}
   observe() { return null; }
   unobserve() { return null; }

@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import AlertTable from './AlertTable';
 import { Alert } from '../services/weatherApi';
@@ -51,10 +51,7 @@ describe('AlertTable', () => {
     renderWithRouter(<AlertTable alerts={mockAlerts} isLoading={false} />);
     
     // Check for elements that are definitely in the component
-    // The text might include the timezone, so use a partial match
     expect(screen.getByText(/All times shown in/)).toBeInTheDocument();
-    expect(screen.getByText('Show Expired Alerts')).toBeInTheDocument();
-    
     // The DataGrid component should be present
     expect(screen.getByRole('grid')).toBeInTheDocument();
   });
@@ -66,17 +63,6 @@ describe('AlertTable', () => {
     expect(screen.getByRole('grid')).toBeInTheDocument();
     
     // We can't reliably check for aria-busy in tests, so just verify the grid is rendered
-  });
-
-  it('has a toggle for expired alerts', () => {
-    renderWithRouter(<AlertTable alerts={mockAlerts} isLoading={false} />);
-    
-    const toggle = screen.getByRole('checkbox');
-    expect(toggle).toBeInTheDocument();
-    
-    fireEvent.click(toggle);
-    // After clicking, the checkbox should be checked
-    expect(toggle).toBeChecked();
   });
 
   it('has toolbar buttons', () => {

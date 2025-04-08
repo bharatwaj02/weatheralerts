@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { BrowserRouter, Routes, Route, MemoryRouter } from 'react-router-dom';
+import { BrowserRouter } from 'react-router-dom';
 import AlertPage from './AlertPage';
 import { useWeatherAlert } from '../hooks/useWeatherAlerts';
 import { Alert } from '../services/weatherApi';

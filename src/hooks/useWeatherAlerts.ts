@@ -3,12 +3,11 @@ import { fetchAlerts, fetchAlertById, Alert, AlertsParams } from '../services/we
 
 /**
  * Custom hook to fetch and manage weather alerts
- * @param params - Query parameters for filtering alerts
  */
-export const useWeatherAlerts = (params: AlertsParams = { active: true }) => {
-  return useQuery({
-    queryKey: ['alerts', params],
-    queryFn: () => fetchAlerts(params),
+export const useWeatherAlerts = () => {
+  return useQuery<Alert[]>({
+    queryKey: ['alerts'],
+    queryFn: fetchAlerts,
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
   });

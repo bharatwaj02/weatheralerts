@@ -59,46 +59,15 @@ export interface AlertsParams {
 
 /**
  * Fetch weather alerts from the National Weather Service API
- * @param params - Query parameters for filtering alerts
  * @returns Promise with the alerts data
  */
-export const fetchAlerts = async (params: AlertsParams = {}): Promise<Alert[]> => {
+export const fetchAlerts = async (): Promise<Alert[]> => {
   try {
-    const { area, start, end } = params;
-    
-    let url = `${API_BASE_URL}/alerts/active`;
-    if (area && area.trim() !== '') {
-      url = `${API_BASE_URL}/alerts/active/area/${area}`;
-    }
-    
+    const url = `${API_BASE_URL}/alerts/active`;
     console.log('Fetching alerts from URL:', url);
     
     const response = await axios.get<AlertsResponse>(url);
-    let alerts = response.data.features;
-    
-    // Applying all filtering client-side
-    alerts = alerts.filter(alert => {
-      // Filter by date range if provided
-      if (start || end) {
-        const effectiveDate = new Date(alert.properties.effective).getTime();
-        const startDate = start ? new Date(start).getTime() : 0;
-        const endDate = end ? new Date(end).getTime() : Infinity;
-        if (effectiveDate < startDate || effectiveDate > endDate) {
-          return false;
-        }
-      }
-      
-      // Filter out test messages
-      const isTestMessage = alert.properties.status.toLowerCase() === 'test';
-      if (isTestMessage) {
-        return false;
-      }
-      
-      return true;
-    });
-    
-    console.log(`Found ${alerts.length} matching alerts`);
-    return alerts;
+    return response.data.features;
   } catch (error) {
     console.error('Error fetching alerts:', error);
     throw error;
